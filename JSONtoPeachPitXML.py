@@ -34,7 +34,7 @@ class Converter:
 		elif datatype is self._types['DEFINITION']:
 			self._xml += '<Blob valueType="hex" value="' + str('%.2x' % self._types[data]) + '" /> <!-- ' + data + ' -->\n'
 		elif datatype is self._types['END']:
-			self._xml += '<Blob valueType="hex" value="00" />\n' + tab + '</Block>\n'
+			self._xml += '<Blob valueType="hex" value="00" />\n' + tab[:-1] + '</Block>\n'
 		elif datatype is self._types['SIZE']:
 			self._xml += '<Number size="32">\n\t' + tab + '<Relation type="size" of="' + data + '" />\n' + tab + '</Number>\n'
 		elif datatype is self._types['TITLE']:
@@ -58,7 +58,7 @@ class Converter:
 				self._add(indent+1, self._types['INIT'], value, dictName)
 				self._add(indent+2, self._types['SIZE'], dictName)
 				self._addDocument(value, indent+2)
-				self._add(indent+1, self._types['END'])
+				self._add(indent+2, self._types['END'])
 			elif type(value) is str:
 				stringName = str(key)+'_'+str(uuid4()).replace('-', '')[:5]
 				self._add(indent+1, self._types['DEFINITION'], 'STRING')
@@ -86,9 +86,9 @@ class Converter:
 		else:
 			raise Exception('Only dict is valid as an input')
 		
-		self._add(indent, self._types['END'])
+		self._add(indent+1, self._types['END'])
 		return self._xml
 
 if __name__ == '__main__':
-	jsonData = {u'_id': ObjectId('000000000000000000000000'), u'ns': u'test.adm', u'key': {u'locs': u'2d'}, u'name': u'locs_2d'}
+	jsonData = {'_id': ObjectId('000000000000000000000000'), 'ns': 'test.adm', 'key': {'locs': '2d'}, 'name': 'locs_2d'}
 	print Converter().convert(jsonData)
