@@ -50,13 +50,21 @@ class Converter:
 			self._xml += '<Number size="32" value="' + str(data) + '" />\n'
 	
 	def _addDocument(self, jsonData, indent):
-		for key, value in jsonData.iteritems():
+		for key, value in jsonData.iteritems() if type(jsonData) is dict else enumerate(jsonData):
 			if type(value) is dict:
 				dictName = str(key)+'_'+str(uuid4()).replace('-', '')[:5]
 				self._add(indent+1, self._types['DEFINITION'], 'DOCUMENT')
 				self._add(indent+1, self._types['TITLE'], key)
 				self._add(indent+1, self._types['INIT'], value, dictName)
 				self._add(indent+2, self._types['SIZE'], dictName)
+				self._addDocument(value, indent+2)
+				self._add(indent+2, self._types['END'])
+			elif type(value) is list:
+				arrayName = str(key)+'_'+str(uuid4()).replace('-', '')[:5]
+				self._add(indent+1, self._types['DEFINITION'], 'ARRAY')
+				self._add(indent+1, self._types['TITLE'], key)
+				self._add(indent+1, self._types['INIT'], value, arrayName)
+				self._add(indent+2, self._types['SIZE'], arrayName)
 				self._addDocument(value, indent+2)
 				self._add(indent+2, self._types['END'])
 			elif type(value) is str:
@@ -72,7 +80,7 @@ class Converter:
 			elif type(value) is int:
 				self._add(indent+1, self._types['DEFINITION'], 'INT32')
 				self._add(indent+1, self._types['TITLE'], key)
-				self._add(indent+1, self._types['INT32'], value)
+				self._add(indent+1, self._types['INT32'], abs(value))
 			elif type(value) is float:
 				self._add(indent+1, self._types['DEFINITION'], 'DOUBLE')
 				self._add(indent+1, self._types['TITLE'], key)
@@ -90,5 +98,6 @@ class Converter:
 		return self._xml
 
 if __name__ == '__main__':
-	jsonData = {'_id': ObjectId('000000000000000000000000'), 'ns': 'test.adm', 'key': {'locs': '2d'}, 'name': 'locs_2d'}
+	#jsonData = {'_id': ObjectId('000000000000000000000000'), 'ns': 'test.adm', 'key': {'locs': '2d'}, 'name': 'locs_2d'}
+	jsonData = {'_id': ObjectId('000000000000000000000000'), 'locs':[[55.5,42.3],[-74,44.74],{'lng':55.5,'lat':42.3}]}
 	print Converter().convert(jsonData)
