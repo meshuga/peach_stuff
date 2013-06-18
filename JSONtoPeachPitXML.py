@@ -17,7 +17,8 @@ class JSONEncoder(_json.JSONEncoder):
         return _json.JSONEncoder.default(self, o)
 
 class Converter:
-	def __init__(self):
+	def __init__(self, newObjectId=True):
+		self.newObjectId = newObjectId
 		self._xml = ''
 		self._types = {'INIT':-1, 'DEFINITION':-2, 'END':-3, 'SIZE': -4,
 		  'TITLE':-5, 'DOUBLE':0x01, 'STRING':0x02, 'DOCUMENT':0x03,
@@ -45,7 +46,12 @@ class Converter:
 		elif datatype is self._types['DOUBLE']:
 			self._xml += '<Blob valueType="hex" value="' + ''.join('%.2x' % ord(c) for c in struct.pack('<d', data)) + '" />\n'
 		elif datatype is self._types['OBJECTID']:
-			self._xml += '<Blob valueType="hex" value="' + str(data) + '" />\n'
+			if self.newObjectId:
+				self._xml += ('<Number size="32" >\n\t' + tab + '<Fixup class="SequenceRandomFixup" />\n' + tab +
+				 '</Number>\n' + tab + '<Blob valueType="hex" value="00000000" mutable="false"/>\n')
+			else:
+				self._xml += '<Blob valueType="hex" value="' + str(data) + '" />\n'
+			
 		elif datatype is self._types['INT32']:
 			self._xml += '<Number size="32" value="' + str(data) + '" />\n'
 	
